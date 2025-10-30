@@ -1,0 +1,310 @@
+.metric-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.metric-modal {
+  background: #0d1117;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: slideUpModal 0.4s ease;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideUpModal {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.metric-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: sticky;
+  top: 0;
+  background: #0d1117;
+  z-index: 10;
+}
+
+.metric-modal-header h2 {
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.metric-modal-close {
+  background: none;
+  border: none;
+  color: #8b949e;
+  font-size: 2rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  line-height: 1;
+}
+
+.metric-modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.metric-modal-body {
+  padding: 2rem;
+}
+
+/* Stats Grid */
+.metric-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.metric-stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.metric-stat-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+.metric-stat-label {
+  font-size: 0.85rem;
+  color: #8b949e;
+  margin-bottom: 0.5rem;
+}
+
+.metric-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Processes Section */
+.metric-processes {
+  margin-top: 2rem;
+}
+
+.metric-processes h3 {
+  font-size: 1.1rem;
+  color: #fff;
+  margin: 0 0 1.25rem 0;
+  font-weight: 600;
+}
+
+.metric-processes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.metric-process-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.metric-process-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(0, 212, 255, 0.3);
+}
+
+.metric-process-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.metric-process-name {
+  font-size: 1rem;
+  color: #fff;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.metric-process-details {
+  font-size: 0.8rem;
+  color: #8b949e;
+}
+
+.metric-process-usage {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 200px;
+}
+
+.metric-process-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.metric-process-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.metric-process-percentage {
+  font-size: 0.95rem;
+  font-weight: 700;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Disk Partitions */
+.metric-partitions {
+  margin-top: 2rem;
+}
+
+.metric-partitions h3 {
+  font-size: 1.1rem;
+  color: #fff;
+  margin: 0 0 1.25rem 0;
+  font-weight: 600;
+}
+
+.metric-partitions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.metric-partition-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.metric-partition-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(0, 212, 255, 0.3);
+}
+
+.metric-partition-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.metric-partition-name {
+  font-size: 1rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+.metric-partition-type {
+  font-size: 0.8rem;
+  color: #fff;
+  background: rgba(167, 139, 250, 0.2);
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid rgba(167, 139, 250, 0.4);
+}
+
+.metric-partition-bar {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.metric-partition-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+
+.metric-partition-usage {
+  font-size: 0.9rem;
+  color: #a78bfa;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Scrollbar */
+.metric-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.metric-modal::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.metric-modal::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.3);
+  border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .metric-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .metric-modal-body {
+    padding: 1.5rem;
+  }
+
+  .metric-process-usage {
+    min-width: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .metric-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

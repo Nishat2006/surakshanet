@@ -1,0 +1,735 @@
+.blockchain-logs {
+  padding: 2rem;
+  color: #fff;
+  min-height: 100vh;
+}
+
+.blockchain-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.blockchain-header h1 {
+  font-size: 1.8rem;
+  margin: 0 0 0.5rem 0;
+  color: #fff;
+}
+
+.blockchain-header p {
+  color: #8b949e;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.system-online-btn {
+  padding: 0.65rem 1.5rem;
+  background: #00ff88;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: #000;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.system-online-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4);
+}
+
+/* Stats Cards */
+.blockchain-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.5s ease forwards;
+  opacity: 0;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 212, 255, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 212, 255, 0.2);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.stat-icon.blue {
+  background: rgba(0, 212, 255, 0.15);
+  color: #00d4ff;
+}
+
+.stat-icon.green {
+  background: rgba(0, 255, 136, 0.15);
+  color: #00ff88;
+}
+
+.stat-icon.purple {
+  background: rgba(167, 139, 250, 0.15);
+  color: #a78bfa;
+}
+
+.stat-icon.yellow {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #8b949e;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Blockchain Visualization */
+.blockchain-visualization-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.blockchain-visualization-section h2 {
+  font-size: 1.2rem;
+  margin: 0 0 1.5rem 0;
+  color: #fff;
+}
+
+.blockchain-chain {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  padding: 1rem 0;
+  gap: 0;
+}
+
+.blockchain-chain::-webkit-scrollbar {
+  height: 8px;
+}
+
+.blockchain-chain::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.blockchain-chain::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.3);
+  border-radius: 4px;
+}
+
+.block-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.blockchain-block {
+  min-width: 140px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  animation: blockSlideIn 0.6s ease forwards;
+  opacity: 0;
+}
+
+@keyframes blockSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.blockchain-block.verified {
+  border-color: #00ff88;
+}
+
+.blockchain-block.pending {
+  border-color: #ffaa00;
+}
+
+.blockchain-block:hover,
+.blockchain-block.hovered {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 12px 32px rgba(0, 212, 255, 0.4);
+  border-color: #00d4ff;
+}
+
+.block-header {
+  margin-bottom: 0.75rem;
+}
+
+.block-number {
+  font-size: 0.85rem;
+  color: #8b949e;
+  font-weight: 600;
+}
+
+.block-hash {
+  font-size: 0.8rem;
+  color: #00d4ff;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 0.75rem;
+  word-break: break-all;
+}
+
+.block-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.block-logs {
+  font-size: 0.75rem;
+  color: #00ff88;
+  font-weight: 600;
+}
+
+.block-verify-btn {
+  background: rgba(0, 212, 255, 0.2);
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.block-verify-btn svg {
+  width: 14px;
+  height: 14px;
+  color: #00d4ff;
+}
+
+.block-verify-btn:hover {
+  background: rgba(0, 212, 255, 0.4);
+  transform: rotate(180deg);
+}
+
+.block-connector {
+  width: 40px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Audit Trail Table */
+.audit-trail-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.audit-trail-section h2 {
+  font-size: 1.2rem;
+  margin: 0 0 1.5rem 0;
+  color: #fff;
+}
+
+.audit-table-container {
+  overflow-x: auto;
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.audit-table thead tr {
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+}
+
+.audit-table th {
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.85rem;
+  color: #8b949e;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.audit-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+  animation: tableRowSlide 0.4s ease forwards;
+  opacity: 0;
+}
+
+@keyframes tableRowSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.audit-row:hover {
+  background: rgba(0, 212, 255, 0.05);
+  border-left: 3px solid #00d4ff;
+}
+
+.audit-table td {
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.block-num {
+  color: #8b949e;
+  font-weight: 600;
+}
+
+.hash-col {
+  color: #00d4ff;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+}
+
+.timestamp-col {
+  color: #8b949e;
+  font-size: 0.85rem;
+}
+
+.count-col {
+  color: #fff;
+  font-weight: 600;
+}
+
+.status-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.status-badge.verified {
+  background: rgba(0, 255, 136, 0.2);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.4);
+}
+
+.status-badge.pending {
+  background: rgba(255, 170, 0, 0.2);
+  color: #ffaa00;
+  border: 1px solid rgba(255, 170, 0, 0.4);
+}
+
+.action-btn {
+  padding: 0.4rem 1rem;
+  background: #00d4ff;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+}
+
+/* Block Details Modal */
+.block-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.block-modal {
+  background: #0d1117;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUpModal 0.4s ease;
+}
+
+@keyframes slideUpModal {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.block-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: sticky;
+  top: 0;
+  background: #0d1117;
+  z-index: 10;
+}
+
+.block-modal-header h2 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: #00d4ff;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: #8b949e;
+  font-size: 2rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.block-modal-body {
+  padding: 1.5rem;
+}
+
+.block-title {
+  font-size: 1.1rem;
+  color: #8b949e;
+  margin-bottom: 1.5rem;
+}
+
+.hash-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.hash-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.hash-box label {
+  display: block;
+  font-size: 0.85rem;
+  color: #8b949e;
+  margin-bottom: 0.5rem;
+}
+
+.hash-value {
+  font-size: 0.95rem;
+  color: #00d4ff;
+  font-family: 'Courier New', monospace;
+  word-break: break-all;
+}
+
+.hash-value.prev-hash {
+  color: #a78bfa;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.info-box label {
+  display: block;
+  font-size: 0.85rem;
+  color: #8b949e;
+  margin-bottom: 0.5rem;
+}
+
+.info-value {
+  font-size: 0.95rem;
+  color: #fff;
+  font-weight: 500;
+}
+
+.verification-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.verification-badge svg {
+  width: 16px;
+  height: 16px;
+}
+
+.verification-badge.verified {
+  background: rgba(0, 255, 136, 0.2);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.4);
+}
+
+.verification-badge.failed {
+  background: rgba(255, 68, 68, 0.2);
+  color: #ff4444;
+  border: 1px solid rgba(255, 68, 68, 0.4);
+}
+
+.crypto-verification {
+  background: rgba(0, 255, 136, 0.05);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.crypto-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: #00ff88;
+  font-weight: 600;
+}
+
+.crypto-header svg {
+  width: 20px;
+  height: 20px;
+}
+
+.crypto-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.crypto-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.crypto-label {
+  font-size: 0.9rem;
+  color: #8b949e;
+}
+
+.crypto-value {
+  font-size: 0.9rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+.crypto-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.crypto-badge.valid {
+  background: rgba(0, 255, 136, 0.2);
+  color: #00ff88;
+}
+
+.crypto-badge.confirmed {
+  background: rgba(0, 212, 255, 0.2);
+  color: #00d4ff;
+}
+
+.contained-logs {
+  margin-top: 1.5rem;
+}
+
+.contained-logs h3 {
+  font-size: 1rem;
+  color: #fff;
+  margin: 0 0 1rem 0;
+}
+
+.logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.log-entry {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: #00ff88;
+  line-height: 1.5;
+}
+
+/* Scrollbar */
+.block-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.block-modal::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.block-modal::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.3);
+  border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .blockchain-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hash-grid,
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .blockchain-logs {
+    padding: 1rem;
+  }
+
+  .blockchain-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .blockchain-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .system-online-btn {
+    width: 100%;
+  }
+}
