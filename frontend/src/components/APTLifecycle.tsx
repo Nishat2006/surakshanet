@@ -288,39 +288,35 @@ function APTLifecycle() {
                       </div>
                     </div>
                     
-                    {item.id === 5 && (
-                      <div className="details-section">
-                        <h4>• Threat Level:</h4>
-                        <div className="threat-level-bar">
-                          <div 
-                            className="threat-level-fill" 
-                            style={{ 
-                              width: `${animatedValues[item.id]?.threatLevel || item.threatLevel}%`,
-                              background: item.threatLevel > 80 ? 'linear-gradient(90deg, #ff4444, #ff0000)' : 
-                                         item.threatLevel > 50 ? 'linear-gradient(90deg, #ffaa00, #ff6600)' : 
-                                         'linear-gradient(90deg, #4AF2C5, #00d4ff)'
-                            }}
-                          />
-                          <span className="threat-level-value">{animatedValues[item.id]?.threatLevel || item.threatLevel}%</span>
-                        </div>
+                    <div className="details-section">
+                      <h4>• Threat Level:</h4>
+                      <div className="threat-level-bar">
+                        <div 
+                          className="threat-level-fill" 
+                          style={{ 
+                            width: `${animatedValues[item.id]?.threatLevel || item.threatLevel}%`,
+                            background: item.threatLevel > 80 ? 'linear-gradient(90deg, #ff4444, #ff0000)' : 
+                                       item.threatLevel > 50 ? 'linear-gradient(90deg, #ffaa00, #ff6600)' : 
+                                       'linear-gradient(90deg, #4AF2C5, #00d4ff)'
+                          }}
+                        />
+                        <span className="threat-level-value">{animatedValues[item.id]?.threatLevel || item.threatLevel}%</span>
                       </div>
-                    )}
+                    </div>
 
-                    {item.id === 5 && (
-                      <div className="details-section">
-                        <h4>• Key Metrics:</h4>
-                        <div className="key-metrics">
-                          <div className="metric-item">
-                            <span className="metric-label">Events</span>
-                            <span className="metric-value">{animatedValues[item.id]?.events || item.events}</span>
-                          </div>
-                          <div className="metric-item">
-                            <span className="metric-label">Duration</span>
-                            <span className="metric-value">{item.duration}</span>
-                          </div>
+                    <div className="details-section">
+                      <h4>• Key Metrics:</h4>
+                      <div className="key-metrics">
+                        <div className="metric-item">
+                          <span className="metric-label">Events</span>
+                          <span className="metric-value">{animatedValues[item.id]?.events || item.events}</span>
+                        </div>
+                        <div className="metric-item">
+                          <span className="metric-label">Duration</span>
+                          <span className="metric-value">{item.duration}</span>
                         </div>
                       </div>
-                    )}
+                    </div>
                     
                     <button className="details-toggle" onClick={() => setExpandedTimeline(null)}>
                       ▲ Click to collapse

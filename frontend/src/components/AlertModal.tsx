@@ -1,10 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import './AlertModal.css'
 
 interface Alert {
   id: string
   title: string
-  severity: 'HIGH' | 'MEDIUM' | 'LOW'
+  severity: 'HIGH' | 'MEDIUM' | 'LOW' | 'CRITICAL'
   sourceIp: string
   targetIp: string
   timestamp: string
@@ -17,9 +17,12 @@ interface Alert {
 interface AlertModalProps {
   alert: Alert
   onClose: () => void
+  onTakeAction: (logId: string) => Promise<void>
 }
 
-function AlertModal({ alert, onClose }: AlertModalProps) {
+function AlertModal({ alert, onClose, onTakeAction }: AlertModalProps) {
+  const [isMitigating, setIsMitigating] = useState(false)
+
   useEffect(() => {
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden'
@@ -31,6 +34,17 @@ function AlertModal({ alert, onClose }: AlertModalProps) {
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose()
+    }
+  }
+
+  const handleActionButtonClick = async () => {
+    setIsMitigating(true)
+    try {
+      await onTakeAction(alert.id)
+    } catch (error) {
+      console.error('Error taking action:', error)
+    } finally {
+      setIsMitigating(false)
     }
   }
 
@@ -94,8 +108,12 @@ function AlertModal({ alert, onClose }: AlertModalProps) {
           <button className="modal-btn secondary" onClick={onClose}>
             Close
           </button>
-          <button className="modal-btn primary">
-            Take Action
+          <button 
+            className="modal-btn primary" 
+            onClick={handleActionButtonClick}
+            disabled={isMitigating}
+          >
+            {isMitigating ? 'Mitigating...' : 'Take Action'}
           </button>
         </div>
       </div>

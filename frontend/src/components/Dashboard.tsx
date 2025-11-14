@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import axios from 'axios'
 import './Dashboard.css'
 import ThreatChart from './ThreatChart.tsx'
 import AlertModal from './AlertModal.tsx'
@@ -7,12 +8,17 @@ import LogAnalytics from './LogAnalytics.tsx'
 import NetworkCorrelation from './NetworkCorrelation.tsx'
 import RuleManagement from './RuleManagement.tsx'
 import BlockchainLogs from './BlockchainLogs.tsx'
+import BlockchainDemo from './BlockchainDemo.tsx'
 import MetricDetailsModal from './MetricDetailsModal.tsx'
+import XaiDashboard from './XaiDashboard.tsx'
+import { useSystemStats } from '../hooks/useSystemStats'
+
+const API_GATEWAY_URL = "http://127.0.0.1:5000"
 
 interface Alert {
   id: string
   title: string
-  severity: 'HIGH' | 'MEDIUM' | 'LOW'
+  severity: 'HIGH' | 'MEDIUM' | 'LOW' | 'CRITICAL'
   sourceIp: string
   targetIp: string
   timestamp: string
@@ -20,138 +26,8 @@ interface Alert {
   recommendedActions: string[]
   affectedSystem: string
   color: string
+  status: 'Active' | 'Mitigated' | string
 }
-
-const mockAlerts: Alert[] = [
-  {
-    id: '1',
-    title: 'Suspicious DNS Query',
-    severity: 'HIGH',
-    sourceIp: '192.168.244.268',
-    targetIp: '10.0.0.1',
-    timestamp: '16/16/2025, 7:49:55 PM',
-    description: 'Unusual DNS query pattern detected from internal network',
-    recommendedActions: [
-      'Isolate affected system from network',
-      'Investigate source IP for malicious activity',
-      'Review related logs for additional indicators'
-    ],
-    affectedSystem: 'server-2',
-    color: '#ff4444'
-  },
-  {
-    id: '2',
-    title: 'Privilege Escalation Attempt',
-    severity: 'HIGH',
-    sourceIp: '172.16.0.45',
-    targetIp: '172.16.0.1',
-    timestamp: '16/16/2025, 7:45:22 PM',
-    description: 'Unauthorized privilege escalation attempt detected',
-    recommendedActions: [
-      'Lock user account immediately',
-      'Review access logs',
-      'Conduct security audit'
-    ],
-    affectedSystem: 'web-server-1',
-    color: '#ff6644'
-  },
-  {
-    id: '3',
-    title: 'Unusual Network Traffic',
-    severity: 'MEDIUM',
-    sourceIp: '10.0.1.50',
-    targetIp: '8.8.8.8',
-    timestamp: '16/16/2025, 7:42:10 PM',
-    description: 'Abnormal network traffic pattern detected',
-    recommendedActions: [
-      'Monitor traffic patterns',
-      'Check for data exfiltration',
-      'Update firewall rules'
-    ],
-    affectedSystem: 'workstation-5',
-    color: '#ffaa00'
-  },
-  {
-    id: '4',
-    title: 'Brute Force Attack',
-    severity: 'HIGH',
-    sourceIp: '203.0.113.42',
-    targetIp: '192.168.1.100',
-    timestamp: '16/16/2025, 7:38:45 PM',
-    description: 'Multiple failed login attempts detected',
-    recommendedActions: [
-      'Block source IP address',
-      'Enable rate limiting',
-      'Review authentication logs'
-    ],
-    affectedSystem: 'auth-server',
-    color: '#ff4444'
-  },
-  {
-    id: '5',
-    title: 'Lateral Movement Detected',
-    severity: 'MEDIUM',
-    sourceIp: '192.168.1.75',
-    targetIp: '192.168.1.80',
-    timestamp: '16/16/2025, 7:35:30 PM',
-    description: 'Suspicious lateral movement across network segments',
-    recommendedActions: [
-      'Isolate affected systems',
-      'Review network segmentation',
-      'Check for compromised credentials'
-    ],
-    affectedSystem: 'database-1',
-    color: '#ffaa00'
-  },
-  {
-    id: '6',
-    title: 'Malware Communication',
-    severity: 'HIGH',
-    sourceIp: '192.168.2.100',
-    targetIp: '185.220.101.5',
-    timestamp: '16/16/2025, 7:32:15 PM',
-    description: 'Communication with known malware C&C server detected',
-    recommendedActions: [
-      'Quarantine affected system',
-      'Run malware scan',
-      'Block C&C server IP'
-    ],
-    affectedSystem: 'endpoint-12',
-    color: '#ff4444'
-  },
-  {
-    id: '7',
-    title: 'Trojan Backdoor Attempt',
-    severity: 'MEDIUM',
-    sourceIp: '10.10.10.25',
-    targetIp: '10.10.10.1',
-    timestamp: '16/16/2025, 7:28:50 PM',
-    description: 'Trojan backdoor installation attempt detected',
-    recommendedActions: [
-      'Remove malicious files',
-      'Update antivirus definitions',
-      'Scan all connected systems'
-    ],
-    affectedSystem: 'file-server',
-    color: '#ffaa00'
-  },
-  {
-    id: '8',
-    title: 'Suspicious SSH Activity',
-    severity: 'LOW',
-    sourceIp: '192.168.5.50',
-    targetIp: '192.168.5.1',
-    timestamp: '16/16/2025, 7:25:40 PM',
-    description: 'Unusual SSH connection pattern detected',
-    recommendedActions: [
-      'Review SSH logs',
-      'Verify user credentials',
-      'Enable two-factor authentication'
-    ],
-    affectedSystem: 'linux-server-3',
-    color: '#00ff88'
-  }
-]
 
 interface DashboardProps {
   onSignOut: () => void
@@ -160,10 +36,31 @@ interface DashboardProps {
 function Dashboard({ onSignOut }: DashboardProps) {
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [currentView, setCurrentView] = useState<'dashboard' | 'apt-lifecycle' | 'log-analytics' | 'network-correlation' | 'rule-management' | 'blockchain-logs'>('dashboard')
+  const [currentView, setCurrentView] = useState<'dashboard' | 'apt-lifecycle' | 'log-analytics' | 'network-correlation' | 'rule-management' | 'blockchain-logs' | 'blockchain-demo' | 'xai-dashboard'>('dashboard')
   const [currentTime, setCurrentTime] = useState(new Date())
   const [notificationOpen, setNotificationOpen] = useState(false)
   const [metricModal, setMetricModal] = useState<'cpu' | 'memory' | 'storage' | null>(null)
+  const [liveAlerts, setLiveAlerts] = useState<Alert[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSimulating, setIsSimulating] = useState(false)
+  const [allLogs, setAllLogs] = useState([])
+  const [liveStats, setLiveStats] = useState({
+    cpuUsage: 35,
+    memoryUsage: 53,
+    logIngestionRate: "12,577/s",
+    totalThreats: 0,
+    anomalies: 0,
+    activeAlerts: 0,
+  })
+  const [dynamicStorageStats, setDynamicStorageStats] = useState({
+    logsPerSecond: "12,577/s",
+    totalLogs: "2,334,423",
+    iops: "2,920",
+    logBarPercent: 70
+  })
+
+  // Real-time system stats via WebSocket
+  const { stats: systemStats, isConnected: statsConnected } = useSystemStats()
 
   const handleAlertClick = (alert: Alert) => {
     setSelectedAlert(alert)
@@ -173,13 +70,117 @@ function Dashboard({ onSignOut }: DashboardProps) {
     setSelectedAlert(null)
   }
 
-  // Update time every second
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`${API_GATEWAY_URL}/dashboard`)
+      setLiveAlerts(response.data.alerts)
+      setLiveStats(response.data.stats)
+      setAllLogs(response.data.all_logs)
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const generateRandomFeatures = () => {
+    const baseFeatures = "443,141385,9,7,568,320,385,0,240.5,142,88,0,0,51.8,17296.5,567,141385,0,141385,17296.5,567,141385,0,6,17337.3,346,141385,0,296,240,14.5,14.5,0,385,183.5,187.9,35306.9,0,0,1,183.5,9,88,5,184,443,30.3,56.9,23.1,45.8,51.8,17296.5"
+    const featuresArray = baseFeatures.split(',')
+    
+    const randomizedFeatures = featuresArray.map(valueStr => {
+      const originalValue = parseFloat(valueStr)
+      const isInteger = !valueStr.includes('.')
+      
+      // Apply random noise (+/- 10%)
+      const noisePercent = (Math.random() * 4.0) + 1.0 // -10% to +10%
+      let newValue = originalValue * noisePercent;
+      
+      // Ensure no negative values
+      newValue = Math.max(0, newValue)
+      
+      // Round to integer if original was integer
+      if (isInteger) {
+        newValue = Math.round(newValue)
+      }
+      
+      // Format to 4 decimal places
+      return newValue.toFixed(4)
+    })
+    
+    return randomizedFeatures.join(',')
+  }
+
+  const handleSimulateAttack = async () => {
+    setIsSimulating(true)
+    const randomFeatures = generateRandomFeatures()
+    const randomIp = `185.190.25.${Math.floor(Math.random() * 254) + 1}`
+    
+    const fakeLog = {
+      timestamp: new Date().toISOString(),
+      source_ip: randomIp,
+      attack_type: "Brute Force",
+      features: randomFeatures
+    }
+    try {
+      await axios.post(`${API_GATEWAY_URL}/ingest`, fakeLog)
+      alert("Attack Simulated! Backend processing...")
+      fetchData() // Refetch data
+    } catch (error) {
+      console.error("Error simulating attack:", error)
+    } finally {
+      setIsSimulating(false)
+    }
+  }
+
+  const handleTakeAction = async (logId: string) => {
+    try {
+      await axios.post(`${API_GATEWAY_URL}/mitigate`, { log_id: logId })
+      closeModal()
+      fetchData() // Refetch data to show updated status
+    } catch (error) {
+      console.error("Error mitigating threat:", error)
+      alert("Failed to mitigate threat. Please try again.")
+    }
+  }
+
+  // Update liveStats when systemStats changes
+  useEffect(() => {
+    if (systemStats) {
+      setLiveStats(prev => ({
+        ...prev,
+        cpuUsage: systemStats.cpu.usage_percent,
+        memoryUsage: systemStats.memory.usage_percent,
+      }))
+    }
+  }, [systemStats])
+
+  // Update time, fetch data on load, and set up poller
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date())
     }, 1000)
 
-    return () => clearInterval(timer)
+    fetchData() // Fetch data on initial load
+    const dataPoller = setInterval(fetchData, 5000) // Poll every 5 seconds
+
+    return () => {
+      clearInterval(timer)
+      clearInterval(dataPoller)
+    }
+  }, [])
+
+  // Update dynamic storage stats every 2 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDynamicStorageStats({
+        logsPerSecond: `${Math.floor(Math.random() * 2000 + 10000).toLocaleString()}/s`,
+        totalLogs: `${Math.floor(Math.random() * 100000 + 2300000).toLocaleString()}`,
+        iops: `${Math.floor(Math.random() * 500 + 2700).toLocaleString()}`,
+        logBarPercent: Math.floor(Math.random() * 30 + 50)
+      })
+    }, 2000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const formatDateTime = (date: Date) => {
@@ -338,6 +339,29 @@ function Dashboard({ onSignOut }: DashboardProps) {
             </svg>
             <span>Blockchain Logs</span>
           </a>
+          <a 
+            href="#" 
+            className={`nav-item ${currentView === 'blockchain-demo' ? 'active' : ''}`}
+            onClick={(e) => { e.preventDefault(); setCurrentView('blockchain-demo'); }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            <span>🔗 Blockchain Demo</span>
+          </a>
+          <a 
+            href="#" 
+            className={`nav-item ${currentView === 'xai-dashboard' ? 'active' : ''}`}
+            onClick={(e) => { e.preventDefault(); setCurrentView('xai-dashboard'); }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+            <span>XAI Dashboard</span>
+          </a>
         </nav>
 
         {/* User Profile Section */}
@@ -379,7 +403,17 @@ function Dashboard({ onSignOut }: DashboardProps) {
                 <line x1="3" y1="18" x2="21" y2="18"/>
               </svg>
             </button>
-            <h1>Dashboard</h1>
+            <h1>
+              {currentView === 'dashboard' ? 'Dashboard' :
+               currentView === 'apt-lifecycle' ? 'APT Lifecycle' :
+               currentView === 'log-analytics' ? 'Log Analytics' :
+               currentView === 'network-correlation' ? 'Network Correlation' :
+               currentView === 'rule-management' ? 'Rule Management' :
+               currentView === 'blockchain-logs' ? 'Blockchain Logs' :
+               currentView === 'blockchain-demo' ? 'Blockchain Demo' :
+               currentView === 'xai-dashboard' ? 'XAI Dashboard' :
+               'Dashboard'}
+            </h1>
           </div>
           <div className="header-right">
             <div className="notification-wrapper">
@@ -391,17 +425,19 @@ function Dashboard({ onSignOut }: DashboardProps) {
                   <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                   <path d="M13.73 21a2 2 0 01-3.46 0"/>
                 </svg>
-                <span className="notification-badge">{mockAlerts.length}</span>
+                {liveAlerts.length > 0 && (
+                  <span className="notification-badge">{liveAlerts.length}</span>
+                )}
               </button>
               
               {notificationOpen && (
                 <div className="notification-dropdown">
                   <div className="notification-header">
                     <h3>Notifications</h3>
-                    <span className="notification-count">{mockAlerts.length} new</span>
+                    <span className="notification-count">{liveAlerts.length} new</span>
                   </div>
                   <div className="notification-list">
-                    {mockAlerts.slice(0, 5).map((alert: Alert) => (
+                    {liveAlerts.slice(0, 5).map((alert: Alert) => (
                       <div 
                         key={alert.id} 
                         className="notification-item"
@@ -428,7 +464,10 @@ function Dashboard({ onSignOut }: DashboardProps) {
                     ))}
                   </div>
                   <div className="notification-footer">
-                    <button onClick={() => setNotificationOpen(false)}>View All Alerts</button>
+                    <button onClick={() => {
+                        setCurrentView('log-analytics')
+                        setNotificationOpen(false)
+                    }}>View All Alerts</button>
                   </div>
                 </div>
               )}
@@ -440,7 +479,11 @@ function Dashboard({ onSignOut }: DashboardProps) {
         </header>
 
         {/* Dashboard Content */}
-        {currentView === 'blockchain-logs' ? (
+        {currentView === 'xai-dashboard' ? (
+          <XaiDashboard allLogs={allLogs} />
+        ) : currentView === 'blockchain-demo' ? (
+          <BlockchainDemo />
+        ) : currentView === 'blockchain-logs' ? (
           <BlockchainLogs />
         ) : currentView === 'rule-management' ? (
           <RuleManagement />
@@ -448,6 +491,19 @@ function Dashboard({ onSignOut }: DashboardProps) {
           <NetworkCorrelation />
         ) : currentView === 'dashboard' ? (
           <div className="dashboard-content">
+          {/* Simulator Widget */}
+          <div className="simulator-widget">
+            <h4>Demo Center</h4>
+            <p>Simulate a real-time cyber attack to test the AI pipeline.</p>
+            <button
+              onClick={handleSimulateAttack}
+              disabled={isSimulating}
+              className="simulator-btn"
+            >
+              {isSimulating ? "Simulating..." : "Launch Brute Force Attack"}
+            </button>
+          </div>
+
           {/* Title Section */}
           <div className="section-header">
             <h2>Threat Detection Dashboard</h2>
@@ -476,11 +532,11 @@ function Dashboard({ onSignOut }: DashboardProps) {
                 </div>
                 <div className="metric-info">
                   <div className="metric-label">CPU Usage</div>
-                  <div className="metric-value">35%</div>
+                  <div className="metric-value">{liveStats.cpuUsage}%</div>
                 </div>
               </div>
               <div className="metric-bar">
-                <div className="metric-bar-fill" style={{ width: '35%', background: '#00d4ff' }}></div>
+                <div className="metric-bar-fill" style={{ width: `${liveStats.cpuUsage}%`, background: '#00d4ff' }}></div>
               </div>
               <div className="metric-footer">Click for details</div>
             </div>
@@ -498,11 +554,11 @@ function Dashboard({ onSignOut }: DashboardProps) {
                 </div>
                 <div className="metric-info">
                   <div className="metric-label">Memory Usage</div>
-                  <div className="metric-value">53%</div>
+                  <div className="metric-value">{liveStats.memoryUsage}%</div>
                 </div>
               </div>
               <div className="metric-bar">
-                <div className="metric-bar-fill" style={{ width: '53%', background: '#00ff88' }}></div>
+                <div className="metric-bar-fill" style={{ width: `${liveStats.memoryUsage}%`, background: '#00ff88' }}></div>
               </div>
               <div className="metric-footer">Click for details</div>
             </div>
@@ -521,18 +577,18 @@ function Dashboard({ onSignOut }: DashboardProps) {
                 </div>
                 <div className="metric-info">
                   <div className="metric-label">Log Ingestion</div>
-                  <div className="metric-value">12,577/s</div>
+                  <div className="metric-value">{dynamicStorageStats.logsPerSecond}</div>
                 </div>
               </div>
               <div className="metric-bar">
-                <div className="metric-bar-fill" style={{ width: '70%', background: '#a855f7' }}></div>
+                <div className="metric-bar-fill" style={{ width: `${dynamicStorageStats.logBarPercent}%`, background: '#a855f7' }}></div>
               </div>
               <div className="metric-footer">Click for details</div>
             </div>
 
             {/* Row 2: Total Threats, Anomalies, Active Alerts */}
             {/* Total Threats */}
-            <div className="metric-card" onClick={() => alert('Total Threats: 184\nClick for details')}>
+            <div className="metric-card">
               <div className="metric-header">
                 <div className="metric-icon" style={{ background: 'rgba(239, 68, 68, 0.15)' }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
@@ -543,7 +599,7 @@ function Dashboard({ onSignOut }: DashboardProps) {
                 </div>
                 <div className="metric-info">
                   <div className="metric-label">Total Threats</div>
-                  <div className="metric-value">184</div>
+                  <div className="metric-value">{liveStats.totalThreats}</div>
                 </div>
               </div>
               <div className="metric-icon-large" style={{ color: '#ef4444' }}>
@@ -557,7 +613,7 @@ function Dashboard({ onSignOut }: DashboardProps) {
             </div>
 
             {/* Anomalies */}
-            <div className="metric-card" onClick={() => alert('Anomalies Detected: 49\nClick for details')}>
+            <div className="metric-card">
               <div className="metric-header">
                 <div className="metric-icon" style={{ background: 'rgba(234, 179, 8, 0.15)' }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2">
@@ -566,7 +622,7 @@ function Dashboard({ onSignOut }: DashboardProps) {
                 </div>
                 <div className="metric-info">
                   <div className="metric-label">Anomalies</div>
-                  <div className="metric-value">49</div>
+                  <div className="metric-value">{liveStats.anomalies}</div>
                 </div>
               </div>
               <div className="metric-icon-large" style={{ color: '#eab308' }}>
@@ -578,7 +634,7 @@ function Dashboard({ onSignOut }: DashboardProps) {
             </div>
 
             {/* Active Alerts */}
-            <div className="metric-card" onClick={() => alert('Active Alerts: 10\nClick for details')}>
+            <div className="metric-card">
               <div className="metric-header">
                 <div className="metric-icon" style={{ background: 'rgba(0, 212, 255, 0.15)' }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="#00d4ff" strokeWidth="2">
@@ -589,7 +645,7 @@ function Dashboard({ onSignOut }: DashboardProps) {
                 </div>
                 <div className="metric-info">
                   <div className="metric-label">Active Alerts</div>
-                  <div className="metric-value">10</div>
+                  <div className="metric-value">{liveStats.activeAlerts}</div>
                 </div>
               </div>
               <div className="metric-icon-large" style={{ color: '#00d4ff' }}>
@@ -608,13 +664,6 @@ function Dashboard({ onSignOut }: DashboardProps) {
             <div className="chart-card">
               <div className="chart-header">
                 <h3>Threat Activity (24h)</h3>
-                <button className="chart-btn">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="1"/>
-                    <circle cx="19" cy="12" r="1"/>
-                    <circle cx="5" cy="12" r="1"/>
-                  </svg>
-                </button>
               </div>
               <ThreatChart type="threat" />
             </div>
@@ -622,13 +671,6 @@ function Dashboard({ onSignOut }: DashboardProps) {
             <div className="chart-card">
               <div className="chart-header">
                 <h3>Normal vs Threat Traffic</h3>
-                <button className="chart-btn">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="1"/>
-                    <circle cx="19" cy="12" r="1"/>
-                    <circle cx="5" cy="12" r="1"/>
-                  </svg>
-                </button>
               </div>
               <ThreatChart type="traffic" />
             </div>
@@ -638,10 +680,24 @@ function Dashboard({ onSignOut }: DashboardProps) {
           <div className="alerts-section">
             <div className="section-header">
               <h3>Recent Alerts</h3>
-              <button className="view-all-btn">View All</button>
+              <button 
+                className="view-all-btn"
+                onClick={() => {
+                  if (liveAlerts.length === 0) {
+                    alert('There are no active alerts to view.')
+                  } else {
+                    setCurrentView('log-analytics')
+                  }
+                }}
+              >
+                View All
+              </button>
             </div>
             <div className="alerts-list">
-              {mockAlerts.map((alert) => (
+              {liveAlerts.length === 0 && !isLoading && (
+                <div className="alert-item-empty">No recent alerts. Simulate an attack to see results.</div>
+              )}
+              {liveAlerts.map((alert) => (
                 <div 
                   key={alert.id} 
                   className="alert-item"
@@ -651,9 +707,15 @@ function Dashboard({ onSignOut }: DashboardProps) {
                   <div className="alert-content">
                     <div className="alert-title-row">
                       <h4>{alert.title}</h4>
-                      <span className={`severity-badge ${alert.severity.toLowerCase()}`}>
-                        {alert.severity}
-                      </span>
+                      {alert.status === 'Mitigated' ? (
+                        <span className="severity-badge mitigated">
+                          MITIGATED
+                        </span>
+                      ) : (
+                        <span className={`severity-badge ${alert.severity.toLowerCase()}`}>
+                          {alert.severity}
+                        </span>
+                      )}
                     </div>
                     <div className="alert-details">
                       <span>Source IP: {alert.sourceIp}</span>
@@ -676,12 +738,16 @@ function Dashboard({ onSignOut }: DashboardProps) {
 
       {/* Alert Modal */}
       {selectedAlert && (
-        <AlertModal alert={selectedAlert} onClose={closeModal} />
+        <AlertModal alert={selectedAlert} onClose={closeModal} onTakeAction={handleTakeAction} />
       )}
 
       {/* Metric Details Modal */}
       {metricModal && (
-        <MetricDetailsModal type={metricModal} onClose={() => setMetricModal(null)} />
+        <MetricDetailsModal 
+          type={metricModal} 
+          onClose={() => setMetricModal(null)} 
+          liveStorageStats={dynamicStorageStats}
+        />
       )}
     </div>
   )

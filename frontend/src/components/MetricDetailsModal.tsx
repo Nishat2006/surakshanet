@@ -11,9 +11,14 @@ interface Process {
 interface MetricDetailsModalProps {
   type: 'cpu' | 'memory' | 'storage'
   onClose: () => void
+  liveStorageStats: {
+    logsPerSecond: string
+    totalLogs: string
+    iops: string
+  }
 }
 
-function MetricDetailsModal({ type, onClose }: MetricDetailsModalProps) {
+function MetricDetailsModal({ type, onClose, liveStorageStats }: MetricDetailsModalProps) {
   const [processes, setProcesses] = useState<Process[]>([])
   const [stats, setStats] = useState({
     cpu: {
@@ -27,11 +32,6 @@ function MetricDetailsModal({ type, onClose }: MetricDetailsModalProps) {
       used: '17.60GB',
       cached: '2.45GB',
       swap: '0.19GB'
-    },
-    storage: {
-      logsPerSecond: '10,871',
-      totalLogs: '2,334,423',
-      iops: '2,920'
     }
   })
 
@@ -76,11 +76,6 @@ function MetricDetailsModal({ type, onClose }: MetricDetailsModalProps) {
           used: `${(Math.random() * 5 + 15).toFixed(2)}GB`,
           cached: `${(Math.random() * 1 + 2).toFixed(2)}GB`,
           swap: `${(Math.random() * 0.3 + 0.1).toFixed(2)}GB`
-        },
-        storage: {
-          logsPerSecond: `${Math.floor(Math.random() * 2000 + 10000).toLocaleString()}`,
-          totalLogs: `${Math.floor(Math.random() * 100000 + 2300000).toLocaleString()}`,
-          iops: `${Math.floor(Math.random() * 500 + 2700).toLocaleString()}`
         }
       }))
     }, 2000)
@@ -163,15 +158,15 @@ function MetricDetailsModal({ type, onClose }: MetricDetailsModalProps) {
               <>
                 <div className="metric-stat-card">
                   <div className="metric-stat-label">Logs/Second</div>
-                  <div className="metric-stat-value">{stats.storage.logsPerSecond}</div>
+                  <div className="metric-stat-value">{liveStorageStats.logsPerSecond}</div>
                 </div>
                 <div className="metric-stat-card">
                   <div className="metric-stat-label">Total Logs</div>
-                  <div className="metric-stat-value">{stats.storage.totalLogs}</div>
+                  <div className="metric-stat-value">{liveStorageStats.totalLogs}</div>
                 </div>
                 <div className="metric-stat-card">
                   <div className="metric-stat-label">IOPS</div>
-                  <div className="metric-stat-value">{stats.storage.iops}</div>
+                  <div className="metric-stat-value">{liveStorageStats.iops}</div>
                 </div>
               </>
             )}

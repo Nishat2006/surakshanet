@@ -1,103 +1,57 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 import './BlockchainLogs.css'
 
+const BLOCKCHAIN_URL = "http://localhost:3001"
+
 interface Block {
-  id: number
+  index: number
+  timestamp: number
   hash: string
   previousHash: string
-  timestamp: string
-  logCount: number
-  verified: boolean
-  logs: string[]
-}
-
-interface BlockLog {
-  blockNumber: number
-  hash: string
-  previousHash: string
-  timestamp: string
-  logCount: number
-  status: 'Verified' | 'Pending'
-  action: string
-}
-
-const generateHash = (length: number = 16): string => {
-  const chars = '0123456789abcdef'
-  let hash = '0x'
-  for (let i = 0; i < length; i++) {
-    hash += chars[Math.floor(Math.random() * chars.length)]
+  data: {
+    log_id: string
+    log_hash: string
+    severity: string
+    source_ip: string
+    attack_type: string
+    message: string
+    logCount: number
   }
-  return hash
-}
-
-const generateBlocks = (): Block[] => {
-  const blocks: Block[] = []
-  const now = new Date()
-  
-  for (let i = 0; i < 8; i++) {
-    const timestamp = new Date(now.getTime() - (7 - i) * 3600000)
-    const logCount = Math.floor(Math.random() * 100) + 50
-    const verified = Math.random() > 0.2 // 80% verified
-    
-    blocks.push({
-      id: i,
-      hash: generateHash(12),
-      previousHash: i === 0 ? '0x000000000000000' : blocks[i - 1].hash,
-      timestamp: timestamp.toLocaleString('en-US', {
-        month: '2-digit',
-        day: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true
-      }),
-      logCount,
-      verified,
-      logs: [
-        '[2025-10-16T15:20:54.795Z] Log entry #1 - Suspicious activity detected',
-        '[2025-10-16T15:19:54.795Z] Log entry #2 - Suspicious activity detected',
-        '[2025-10-16T15:18:54.795Z] Log entry #3 - Suspicious activity detected'
-      ]
-    })
-  }
-  
-  return blocks
-}
-
-const generateBlockLogs = (): BlockLog[] => {
-  const logs: BlockLog[] = []
-  const now = new Date()
-  
-  for (let i = 0; i < 20; i++) {
-    const timestamp = new Date(now.getTime() - i * 3600000)
-    logs.push({
-      blockNumber: i,
-      hash: generateHash(12),
-      previousHash: generateHash(12),
-      timestamp: timestamp.toLocaleString('en-US', {
-        month: '2-digit',
-        day: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true
-      }),
-      logCount: Math.floor(Math.random() * 100) + 20,
-      status: Math.random() > 0.15 ? 'Verified' : 'Pending',
-      action: 'View'
-    })
-  }
-  
-  return logs
+  nonce: number
 }
 
 function BlockchainLogs() {
-  const [blocks] = useState<Block[]>(generateBlocks())
-  const [blockLogs] = useState<BlockLog[]>(generateBlockLogs())
+  const [blocks, setBlocks] = useState<Block[]>([])
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null)
   const [hoveredBlock, setHoveredBlock] = useState<number | null>(null)
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`${BLOCKCHAIN_URL}/blocks/recent?count=20`)
+      setBlocks(response.data.blocks)
+    } catch (error) {
+      console.error('Error fetching blockchain data:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+    const interval = setInterval(fetchData, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const formatTimestamp = (timestamp: number) => {
+    return new Date(timestamp).toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    })
+  }
 
   const handleBlockClick = (block: Block) => {
     setSelectedBlock(block)
@@ -107,16 +61,9 @@ function BlockchainLogs() {
     setSelectedBlock(null)
   }
 
-  const handleViewLog = (blockNumber: number) => {
-    const block = blocks.find(b => b.id === blockNumber)
-    if (block) {
-      setSelectedBlock(block)
-    }
-  }
-
   const totalBlocks = blocks.length
-  const verifiedBlocks = blocks.filter(b => b.verified).length
-  const totalLogs = blocks.reduce((sum, b) => sum + b.logCount, 0)
+  const verifiedBlocks = blocks.length // All mined blocks are verified
+  const totalLogs = blocks.reduce((sum, block) => sum + (block.data.logCount || 0), 0)
 
   return (
     <div className="blockchain-logs">
@@ -193,21 +140,21 @@ function BlockchainLogs() {
       <div className="blockchain-visualization-section">
         <h2>Blockchain Chain Visualization</h2>
         <div className="blockchain-chain">
-          {blocks.map((block, index) => (
-            <div key={block.id} className="block-wrapper">
+          {blocks.slice(0, 8).map((block, index) => (
+            <div key={block.index} className="block-wrapper">
               <div
-                className={`blockchain-block ${block.verified ? 'verified' : 'pending'} ${hoveredBlock === block.id ? 'hovered' : ''}`}
+                className={`blockchain-block verified ${hoveredBlock === block.index ? 'hovered' : ''}`}
                 onClick={() => handleBlockClick(block)}
-                onMouseEnter={() => setHoveredBlock(block.id)}
+                onMouseEnter={() => setHoveredBlock(block.index)}
                 onMouseLeave={() => setHoveredBlock(null)}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="block-header">
-                  <span className="block-number"># Block {block.id}</span>
+                  <span className="block-number"># Block {block.index}</span>
                 </div>
                 <div className="block-hash">{block.hash.substring(0, 12)}...</div>
                 <div className="block-footer">
-                  <span className="block-logs">{block.logCount} logs</span>
+                  <span className="block-logs">{block.data.logCount || 1} logs</span>
                   <button 
                     className="block-verify-btn"
                     onClick={(e) => {
@@ -223,7 +170,7 @@ function BlockchainLogs() {
                   </button>
                 </div>
               </div>
-              {index < blocks.length - 1 && (
+              {index < Math.min(blocks.length, 8) - 1 && (
                 <div className="block-connector">
                   <svg viewBox="0 0 40 20" preserveAspectRatio="none">
                     <line x1="0" y1="10" x2="40" y2="10" stroke="#00d4ff" strokeWidth="2" strokeDasharray="5,5">
@@ -254,28 +201,28 @@ function BlockchainLogs() {
               </tr>
             </thead>
             <tbody>
-              {blockLogs.map((log, index) => (
+              {blocks.map((block, index) => (
                 <tr 
                   key={index}
                   className="audit-row"
                   style={{ animationDelay: `${index * 0.02}s` }}
                 >
-                  <td className="block-num">Block {log.blockNumber}</td>
-                  <td className="hash-col">{log.hash}</td>
-                  <td className="hash-col">{log.previousHash}</td>
-                  <td className="timestamp-col">{log.timestamp}</td>
-                  <td className="count-col">{log.logCount}</td>
+                  <td className="block-num">Block {block.index}</td>
+                  <td className="hash-col">{block.hash}</td>
+                  <td className="hash-col">{block.previousHash}</td>
+                  <td className="timestamp-col">{formatTimestamp(block.timestamp)}</td>
+                  <td className="count-col">{block.data.logCount || 0}</td>
                   <td>
-                    <span className={`status-badge ${log.status.toLowerCase()}`}>
-                      {log.status}
+                    <span className="status-badge verified">
+                      Verified
                     </span>
                   </td>
                   <td>
                     <button 
                       className="action-btn"
-                      onClick={() => handleViewLog(log.blockNumber)}
+                      onClick={() => handleBlockClick(block)}
                     >
-                      {log.action}
+                      View
                     </button>
                   </td>
                 </tr>
@@ -295,7 +242,7 @@ function BlockchainLogs() {
             </div>
 
             <div className="block-modal-body">
-              <div className="block-title">block-{selectedBlock.id}</div>
+              <div className="block-title">block-{selectedBlock.index}</div>
 
               <div className="hash-grid">
                 <div className="hash-box">
@@ -311,26 +258,19 @@ function BlockchainLogs() {
               <div className="info-grid">
                 <div className="info-box">
                   <label>Timestamp</label>
-                  <div className="info-value">{selectedBlock.timestamp}</div>
+                  <div className="info-value">{formatTimestamp(selectedBlock.timestamp)}</div>
                 </div>
                 <div className="info-box">
                   <label>Log Count</label>
-                  <div className="info-value">{selectedBlock.logCount}</div>
+                  <div className="info-value">{selectedBlock.data.logCount || 0}</div>
                 </div>
                 <div className="info-box">
                   <label>Verification Status</label>
-                  <span className={`verification-badge ${selectedBlock.verified ? 'verified' : 'failed'}`}>
+                  <span className="verification-badge verified">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      {selectedBlock.verified ? (
-                        <polyline points="20 6 9 17 4 12"/>
-                      ) : (
-                        <>
-                          <line x1="18" y1="6" x2="6" y2="18"/>
-                          <line x1="6" y1="6" x2="18" y2="18"/>
-                        </>
-                      )}
+                      <polyline points="20 6 9 17 4 12"/>
                     </svg>
-                    {selectedBlock.verified ? 'Verified' : 'Verification Failed'}
+                    Verified
                   </span>
                 </div>
               </div>
@@ -360,13 +300,26 @@ function BlockchainLogs() {
               </div>
 
               <div className="contained-logs">
-                <h3>Contained Logs (Sample)</h3>
+                <h3>Contained Log Data</h3>
                 <div className="logs-list">
-                  {selectedBlock.logs.map((log, index) => (
-                    <div key={index} className="log-entry">
-                      {log}
-                    </div>
-                  ))}
+                  <div className="log-entry">
+                    <strong>Log ID:</strong> {selectedBlock.data.log_id}
+                  </div>
+                  <div className="log-entry">
+                    <strong>Log Hash:</strong> {selectedBlock.data.log_hash}
+                  </div>
+                  <div className="log-entry">
+                    <strong>Severity:</strong> {selectedBlock.data.severity}
+                  </div>
+                  <div className="log-entry">
+                    <strong>Source IP:</strong> {selectedBlock.data.source_ip}
+                  </div>
+                  <div className="log-entry">
+                    <strong>Attack Type:</strong> {selectedBlock.data.attack_type}
+                  </div>
+                  <div className="log-entry">
+                    <strong>Message:</strong> {selectedBlock.data.message}
+                  </div>
                 </div>
               </div>
             </div>
